@@ -9,7 +9,7 @@
 #include "primitives/transaction.h"
 #include "serialize.h"
 #include "uint256.h"
-
+//#include "b.hh"
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
  * requirements.  When they solve the proof-of-work, they broadcast the block
@@ -21,16 +21,20 @@ class CBlockHeader
 {
 public:
     // header
-    static const size_t HEADER_SIZE=4+32+32+32+4+4+32; // excluding Equihash solution
-    static const int32_t CURRENT_VERSION=4;
+    static const size_t HEADER_SIZE=4+32+32+32+4+4+32+32+32+2; // excluding Equihash solution
+    static const int32_t CURRENT_VERSION=5;
+    static const int32_t SAPLING_BLOCK_VERSION=CURRENT_VERSION;
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
-    uint256 hashReserved;
+    uint256 hashFinalSaplingRoot;
     uint32_t nTime;
     uint32_t nBits;
     uint256 nNonce;
     std::vector<unsigned char> nSolution;
+    uint256 hashReserved1;
+    uint256 hashReserved2;
+    uint32_t nRound;
 
     CBlockHeader()
     {
@@ -42,14 +46,23 @@ public:
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(this->nVersion);
-        nVersion = this->nVersion;
         READWRITE(hashPrevBlock);
         READWRITE(hashMerkleRoot);
-        READWRITE(hashReserved);
+        READWRITE(hashFinalSaplingRoot);
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
         READWRITE(nSolution);
+
+        if (this->nVersion >= SAPLING_BLOCK_VERSION) {
+            READWRITE(hashReserved1);
+            READWRITE(hashReserved2);
+            READWRITE(nRound);
+        } else if (ser_action.ForRead()) {
+            hashReserved1 = uint256{};
+            hashReserved2 = uint256{};
+            nRound = 0;
+        }
     }
 
     void SetNull()
@@ -57,11 +70,14 @@ public:
         nVersion = CBlockHeader::CURRENT_VERSION;
         hashPrevBlock.SetNull();
         hashMerkleRoot.SetNull();
-        hashReserved.SetNull();
+        hashFinalSaplingRoot.SetNull();
         nTime = 0;
         nBits = 0;
-        nNonce = uint256();
+        nNonce.SetNull();
         nSolution.clear();
+        hashReserved1.SetNull();
+        hashReserved2.SetNull();
+        nRound = 0;
     }
 
     bool IsNull() const
@@ -82,7 +98,8 @@ class CBlock : public CBlockHeader
 {
 public:
     // network and disk
-    std::vector<CTransaction> vtx;
+    std::vector<CTransaction> vtx; //< txs order: coinbase | instant txs section | not instant txs section
+    std::vector<unsigned char> vSig; //< n signatures, each is CPubKey::COMPACT_SIGNATURE_SIZE
 
     // memory only
     mutable std::vector<uint256> vMerkleTree;
@@ -104,6 +121,11 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(*(CBlockHeader*)this);
         READWRITE(vtx);
+        if (this->nVersion >= SAPLING_BLOCK_VERSION) {
+            READWRITE(vSig);
+        }  else if (ser_action.ForRead()) {
+            vSig.clear();
+        }
     }
 
     void SetNull()
@@ -111,6 +133,7 @@ public:
         CBlockHeader::SetNull();
         vtx.clear();
         vMerkleTree.clear();
+        vSig.clear();
     }
 
     CBlockHeader GetBlockHeader() const
@@ -119,11 +142,14 @@ public:
         block.nVersion       = nVersion;
         block.hashPrevBlock  = hashPrevBlock;
         block.hashMerkleRoot = hashMerkleRoot;
-        block.hashReserved   = hashReserved;
+        block.hashFinalSaplingRoot = hashFinalSaplingRoot;
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
         block.nSolution      = nSolution;
+        block.hashReserved1  = hashReserved1;
+        block.hashReserved2  = hashReserved2;
+        block.nRound         = nRound;
         return block;
     }
 
@@ -157,12 +183,20 @@ public:
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(this->nVersion);
-        nVersion = this->nVersion;
         READWRITE(hashPrevBlock);
         READWRITE(hashMerkleRoot);
-        READWRITE(hashReserved);
+        READWRITE(hashFinalSaplingRoot);
         READWRITE(nTime);
         READWRITE(nBits);
+        if (this->nVersion >= SAPLING_BLOCK_VERSION) {
+            READWRITE(hashReserved1);
+            READWRITE(hashReserved2);
+            READWRITE(nRound);
+        } else if (ser_action.ForRead()) {
+            hashReserved1 = uint256{};
+            hashReserved2 = uint256{};
+            nRound = 0;
+        }
     }
 };
 
@@ -199,6 +233,10 @@ struct CBlockLocator
     bool IsNull() const
     {
         return vHave.empty();
+    }
+
+    friend bool operator==(const CBlockLocator& a, const CBlockLocator& b) {
+        return (a.vHave == b.vHave);
     }
 };
 
