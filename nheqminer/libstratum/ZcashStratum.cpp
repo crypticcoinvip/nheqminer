@@ -505,7 +505,7 @@ ZcashJob* ZcashMiner::parseJob(const Array& params)
                  << params[5].get_str()
                  << params[6].get_str();
         if (ret->header.nVersion >= CBlockHeader::SAPLING_BLOCK_VERSION) {
-            ssHeader << "00000000"; // nRound
+            ssHeader << params[8].get_str(); // nRound
         }
                     // Empty nonce
         ssHeader << "0000000000000000000000000000000000000000000000000000000000000000"
