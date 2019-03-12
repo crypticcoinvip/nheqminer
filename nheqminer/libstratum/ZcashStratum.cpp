@@ -505,6 +505,13 @@ ZcashJob* ZcashMiner::parseJob(const Array& params)
                     // Empty nonce
                  << "0000000000000000000000000000000000000000000000000000000000000000"
                  << "00"; // Empty solution
+        if (ret->header.nVersion >= CBlockHeader::SAPLING_BLOCK_VERSION) {
+                        // Empty hashReserved1
+            ssHeader << "0000000000000000000000000000000000000000000000000000000000000000"
+                        // Empty hashReserved2
+                     << "0000000000000000000000000000000000000000000000000000000000000000"
+                     << "00000000";   // nRound
+        }
         auto strHexHeader = ssHeader.str();
         std::vector<unsigned char> headerData(ParseHex(strHexHeader));
         CDataStream ss(headerData, SER_NETWORK, PROTOCOL_VERSION);
