@@ -9,7 +9,7 @@
 #include "primitives/transaction.h"
 #include "serialize.h"
 #include "uint256.h"
-//#include "b.hh"
+
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
  * requirements.  When they solve the proof-of-work, they broadcast the block
@@ -30,9 +30,9 @@ public:
     uint256 hashFinalSaplingRoot;
     uint32_t nTime;
     uint32_t nBits;
+    uint32_t nRound;
     uint256 nNonce;
     std::vector<unsigned char> nSolution;
-    uint32_t nRound;
 
     CBlockHeader()
     {
@@ -49,14 +49,13 @@ public:
         READWRITE(hashFinalSaplingRoot);
         READWRITE(nTime);
         READWRITE(nBits);
-        READWRITE(nNonce);
-        READWRITE(nSolution);
-
         if (this->nVersion >= SAPLING_BLOCK_VERSION) {
             READWRITE(nRound);
         } else if (ser_action.ForRead()) {
             nRound = 0;
         }
+        READWRITE(nNonce);
+        READWRITE(nSolution);
     }
 
     void SetNull()
@@ -67,9 +66,9 @@ public:
         hashFinalSaplingRoot.SetNull();
         nTime = 0;
         nBits = 0;
+        nRound = 0;
         nNonce.SetNull();
         nSolution.clear();
-        nRound = 0;
     }
 
     bool IsNull() const
@@ -137,9 +136,9 @@ public:
         block.hashFinalSaplingRoot = hashFinalSaplingRoot;
         block.nTime          = nTime;
         block.nBits          = nBits;
+        block.nRound         = nRound;
         block.nNonce         = nNonce;
         block.nSolution      = nSolution;
-        block.nRound         = nRound;
         return block;
     }
 
