@@ -490,7 +490,9 @@ ZcashJob* ZcashMiner::parseJob(const Array& params)
     // TODO: On a LE host shouldn't this be le32toh?
     ret->header.nVersion = be32toh(version);
 
-    if (ret->header.nVersion == 4 || ret->header.nVersion == 5) {
+    if (ret->header.nVersion == CBlockHeader::SAPLING_BLOCK_VERSION - 1 ||
+        ret->header.nVersion == CBlockHeader::SAPLING_BLOCK_VERSION)
+    {
         if (params.size() < 8) {
             throw std::logic_error("Invalid job params");
         }
@@ -501,17 +503,13 @@ ZcashJob* ZcashMiner::parseJob(const Array& params)
                  << params[3].get_str()
                  << params[4].get_str()
                  << params[5].get_str()
-                 << params[6].get_str()
-                    // Empty nonce
-                 << "0000000000000000000000000000000000000000000000000000000000000000"
-                 << "00"; // Empty solution
+                 << params[6].get_str();
         if (ret->header.nVersion >= CBlockHeader::SAPLING_BLOCK_VERSION) {
-                        // Empty hashReserved1
-            ssHeader << "0000000000000000000000000000000000000000000000000000000000000000"
-                        // Empty hashReserved2
-                     << "0000000000000000000000000000000000000000000000000000000000000000"
-                     << "00000000";   // nRound
+            ssHeader << "00000000"; // nRound
         }
+                    // Empty nonce
+        ssHeader << "0000000000000000000000000000000000000000000000000000000000000000"
+                 << "00"; // Empty solution
         auto strHexHeader = ssHeader.str();
         std::vector<unsigned char> headerData(ParseHex(strHexHeader));
         CDataStream ss(headerData, SER_NETWORK, PROTOCOL_VERSION);
