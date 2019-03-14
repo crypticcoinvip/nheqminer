@@ -505,7 +505,7 @@ ZcashJob* ZcashMiner::parseJob(const Array& params)
                  << params[5].get_str()
                  << params[6].get_str();
         if (ret->header.nVersion >= CBlockHeader::SAPLING_BLOCK_VERSION) {
-            ssHeader << params[7].get_str(); // nRound
+            ssHeader << params[8].get_str(); // nRound
         }
                     // Empty nonce
         ssHeader << "0000000000000000000000000000000000000000000000000000000000000000"
@@ -520,7 +520,7 @@ ZcashJob* ZcashMiner::parseJob(const Array& params)
         }
 
         ret->time = params[5].get_str();
-        ret->clean = params[8].get_bool();
+        ret->clean = params[7].get_bool();
     } else {
         throw std::logic_error("ZcashMiner::parseJob(): Invalid or unsupported block header version");
     }
