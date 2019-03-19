@@ -84,16 +84,13 @@ Example to run benchmark on your CPU:
 
         nheqminer -b
         
-Example to mine on your CPU with your own BTC address and worker1 on NiceHash USA server:
+Example to mine on your CPU with your own CrypticCoin address and worker1 on CrypticPool server, using 6 threads:
 
-        nheqminer -l equihash.usa.nicehash.com:3357 -u YOUR_BTC_ADDRESS_HERE.worker1
+        nheqminer -l crypticpool.com:44444 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker1 -t 6
 
-Example to mine on your CPU with your own BTC address and worker1 on EU server, using 6 threads:
+Example to mine on your GPU with your own CrypticCoin address and worker1 on CrypticPool server, using 6 threads:
 
-        nheqminer -l equihash.eu.nicehash.com:3357 -u YOUR_BTC_ADDRESS_HERE.worker1 -t 6
+        nheqminer -l crypticpool.com:55555 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker2 -cv 1 -cd 0 -ct 2
 
 <i>Note: if you have a 4-core CPU with hyper threading enabled (total 8 threads) it is best to run with only 6 threads (experimental benchmarks shows that best results are achieved with 75% threads utilized)</i>
 
-Example to mine on your CPU as well on your CUDA GPUs with your own BTC address and worker1 on EU server, using 6 CPU threads and 2 CUDA GPUs:
-
-        nheqminer -l equihash.eu.nicehash.com:3357 -u YOUR_BTC_ADDRESS_HERE.worker1 -t 6 -cd 0 1
