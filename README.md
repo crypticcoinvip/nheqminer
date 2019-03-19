@@ -5,7 +5,7 @@
 
 ## Windows:
 
-Windows builds made by us are available here: https://github.com/nicehash/nheqminer/releases
+Windows builds made by us are available here: https://github.com/crypticcoinvip/nheqminer/releases
 
 Download and install:
 - [CUDA SDK](https://developer.nvidia.com/cuda-downloads) (if not needed remove **USE_CUDA_TROMP** and **USE_CUDA_DJEZO** from **nheqminer** Preprocessor definitions under Properties > C/C++ > Preprocessor)
@@ -33,7 +33,7 @@ Working solvers CPU_TROMP, CPU_XENONCAT, CUDA_TROMP, CUDA_DJEZO
 
  - Open terminal and run the following commands:
    - `sudo apt-get install cmake build-essential libboost-all-dev`
-   - `git clone -b Linux https://github.com/nicehash/nheqminer.git`
+   - `git clone -b Linux https://github.com/crypticcoinvip/nheqminer.git`
    - `cd nheqminer/cpu_xenoncat/Linux/asm/`
    - `sh assemble.sh`
    - `cd ../../../Linux_cmake/nheqminer_cpu_xenoncat`
@@ -53,7 +53,7 @@ Working solvers CPU_TROMP, CPU_XENONCAT, CUDA_TROMP, CUDA_DJEZO
    - `sudo apt-get install cuda`
    - `sudo apt-get install cuda-toolkit-8-0`
    - `sudo apt-get install cmake build-essential libboost-all-dev`
-   - `git clone -b Linux https://github.com/nicehash/nheqminer.git`
+   - `git clone -b Linux https://github.com/crypticcoinvip/nheqminer.git`
    - `cd nheqminer/Linux_cmake/nheqminer_cuda_tromp && cmake . && make -j $(nproc)`
    - or specify your compute version for example 50 like so `cd nheqminer/Linux_cmake/nheqminer_cuda_tromp && cmake COMPUTE=50 . && make`
 
