@@ -242,16 +242,16 @@ int main(int argc, char* argv[])
 #endif
 
 	std::cout << std::endl;
-	std::cout << "\t==================== www.nicehash.com ====================" << std::endl;
-	std::cout << "\t\tEquihash CPU&GPU Miner for NiceHash v" STANDALONE_MINER_VERSION << std::endl;
+	std::cout << "\t==================== crypticcoin.io ====================" << std::endl;
+	std::cout << "\t\tEquihash CPU&GPU Miner for CrypticCoin v" STANDALONE_MINER_VERSION << std::endl;
 	std::cout << "\tThanks to Zcash developers for providing base of the code." << std::endl;
 	std::cout << "\t    Special thanks to tromp, xenoncat and djeZo for providing "<< std::endl;
 	std::cout << "\t      optimized CPU and CUDA equihash solvers." << std::endl;
-	std::cout << "\t==================== www.nicehash.com ====================" << std::endl;
+	std::cout << "\t==================== crypticcoin.io ====================" << std::endl;
 	std::cout << std::endl;
 
-	std::string location = "equihash.eu.nicehash.com:3357";
-	std::string user = "34HKWdzLxWBduUfJE9JxaFhoXnfC6gmePG";
+	std::string location = "crypticpool.com:44444";
+	std::string user = "c1SJ8Aako5wJ21WLeqPexDVhpJNTXwzwCMe";
 	std::string password = "x";
 	int num_threads = 0;
 	bool benchmark = false;
