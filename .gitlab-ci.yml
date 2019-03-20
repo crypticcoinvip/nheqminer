@@ -2,7 +2,7 @@ deleted:
   script:
   - rm -r /var/lib/gitlab-runner/builds/1d9ea636/0/cryptic/nheqminer/
   - rm -rf /var/lib/gitlab-runner/builds/1d9ea636/0/cryptic/nheqminer/
-  - mkdir /var/lib/gitlab-runner/builds/1d9ea636/0/cryptic/nheqminer
+  #- mkdir /var/lib/gitlab-runner/builds/1d9ea636/0/cryptic/nheqminer
 mirror:
   script:
   - git clone http://gitlab-ci-token:${CI_BUILD_TOKEN}@git.sfxdx.ru/cryptic/nheqminer.git
