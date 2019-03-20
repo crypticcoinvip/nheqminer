@@ -48,7 +48,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # Common
-include_directories(${nheqminer_SOURCE_DIR}/nheqminer)
+set(nheqminer_src_dir ${nheqminer_SOURCE_DIR}/src)
+include_directories(${nheqminer_src_dir})
 
 # BOOST
 #find_package(Threads REQUIRED COMPONENTS)
@@ -82,61 +83,61 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/../)
 
 set(SOURCE_FILES
     # sources
-    nheqminer/amount.cpp
-    nheqminer/api.cpp
-    nheqminer/arith_uint256.cpp
-    nheqminer/crypto/sha256.cpp
-    nheqminer/json/json_spirit_reader.cpp
-    nheqminer/json/json_spirit_value.cpp
-    nheqminer/json/json_spirit_writer.cpp
-    nheqminer/libstratum/ZcashStratum.cpp
-    nheqminer/main.cpp
-    nheqminer/primitives/block.cpp
-    nheqminer/speed.cpp
-    nheqminer/uint256.cpp
-    nheqminer/utilstrencodings.cpp
+    ${nheqminer_src_dir}/amount.cpp
+    ${nheqminer_src_dir}/api.cpp
+    ${nheqminer_src_dir}/arith_uint256.cpp
+    ${nheqminer_src_dir}/crypto/sha256.cpp
+    ${nheqminer_src_dir}/json/json_spirit_reader.cpp
+    ${nheqminer_src_dir}/json/json_spirit_value.cpp
+    ${nheqminer_src_dir}/json/json_spirit_writer.cpp
+    ${nheqminer_src_dir}/libstratum/ZcashStratum.cpp
+    ${nheqminer_src_dir}/main.cpp
+    ${nheqminer_src_dir}/primitives/block.cpp
+    ${nheqminer_src_dir}/speed.cpp
+    ${nheqminer_src_dir}/uint256.cpp
+    ${nheqminer_src_dir}/utilstrencodings.cpp
     # headers
-    nheqminer/amount.h
-    nheqminer/api.hpp
-    nheqminer/arith_uint256.h
-    nheqminer/crypto/sha256.h
-    nheqminer/hash.h
-    nheqminer/json/json_spirit.h
-    nheqminer/json/json_spirit_error_position.h
-    nheqminer/json/json_spirit_reader.h
-    nheqminer/json/json_spirit_reader_template.h
-    nheqminer/json/json_spirit_stream_reader.h
-    nheqminer/json/json_spirit_utils.h
-    nheqminer/json/json_spirit_value.h
-    nheqminer/json/json_spirit_writer.h
-    nheqminer/json/json_spirit_writer_template.h
-    nheqminer/libstratum/StratumClient.cpp
-    nheqminer/libstratum/StratumClient.h
-    nheqminer/libstratum/ZcashStratum.cpp
-    nheqminer/libstratum/ZcashStratum.h
-    nheqminer/primitives/block.h
-    nheqminer/primitives/transaction.h
-    nheqminer/script/script.h
-    nheqminer/serialize.h
-    nheqminer/speed.hpp
-    nheqminer/streams.h
-    nheqminer/support/allocators/zeroafterfree.h
-    nheqminer/tinyformat.h
-    nheqminer/uint252.h
-    nheqminer/uint256.h
-    nheqminer/utilstrencodings.h
-    nheqminer/version.h
-    nheqminer/zcash/JoinSplit.hpp
-    nheqminer/zcash/NoteEncryption.hpp
-    nheqminer/zcash/Proof.hpp
-    nheqminer/zcash/Zcash.h
-    nheqminer/SolverStub.h # just a stub
+    ${nheqminer_src_dir}/amount.h
+    ${nheqminer_src_dir}/api.hpp
+    ${nheqminer_src_dir}/arith_uint256.h
+    ${nheqminer_src_dir}/crypto/sha256.h
+    ${nheqminer_src_dir}/hash.h
+    ${nheqminer_src_dir}/json/json_spirit.h
+    ${nheqminer_src_dir}/json/json_spirit_error_position.h
+    ${nheqminer_src_dir}/json/json_spirit_reader.h
+    ${nheqminer_src_dir}/json/json_spirit_reader_template.h
+    ${nheqminer_src_dir}/json/json_spirit_stream_reader.h
+    ${nheqminer_src_dir}/json/json_spirit_utils.h
+    ${nheqminer_src_dir}/json/json_spirit_value.h
+    ${nheqminer_src_dir}/json/json_spirit_writer.h
+    ${nheqminer_src_dir}/json/json_spirit_writer_template.h
+    ${nheqminer_src_dir}/libstratum/StratumClient.cpp
+    ${nheqminer_src_dir}/libstratum/StratumClient.h
+    ${nheqminer_src_dir}/libstratum/ZcashStratum.cpp
+    ${nheqminer_src_dir}/libstratum/ZcashStratum.h
+    ${nheqminer_src_dir}/primitives/block.h
+    ${nheqminer_src_dir}/primitives/transaction.h
+    ${nheqminer_src_dir}/script/script.h
+    ${nheqminer_src_dir}/serialize.h
+    ${nheqminer_src_dir}/speed.hpp
+    ${nheqminer_src_dir}/streams.h
+    ${nheqminer_src_dir}/support/allocators/zeroafterfree.h
+    ${nheqminer_src_dir}/tinyformat.h
+    ${nheqminer_src_dir}/uint252.h
+    ${nheqminer_src_dir}/uint256.h
+    ${nheqminer_src_dir}/utilstrencodings.h
+    ${nheqminer_src_dir}/version.h
+    ${nheqminer_src_dir}/zcash/JoinSplit.hpp
+    ${nheqminer_src_dir}/zcash/NoteEncryption.hpp
+    ${nheqminer_src_dir}/zcash/Proof.hpp
+    ${nheqminer_src_dir}/zcash/Zcash.h
+    ${nheqminer_src_dir}/SolverStub.h # just a stub
 
-    nheqminer/AvailableSolvers.h
-    nheqminer/ISolver.h
-    nheqminer/Solver.h
-    nheqminer/MinerFactory.h
-    nheqminer/MinerFactory.cpp
+    ${nheqminer_src_dir}/AvailableSolvers.h
+    ${nheqminer_src_dir}/ISolver.h
+    ${nheqminer_src_dir}/Solver.h
+    ${nheqminer_src_dir}/MinerFactory.h
+    ${nheqminer_src_dir}/MinerFactory.cpp
 
     # make same path on windows
     #blake shared
@@ -184,9 +185,9 @@ if (USE_CPU_TROMP)
 endif()
 if (USE_CPU_XENONCAT)
     add_library ( xenoncat_avx1 SHARED IMPORTED GLOBAL )
-    set_target_properties ( xenoncat_avx1 PROPERTIES IMPORTED_LOCATION "../nheqminer/cpu_xenoncat/asm_linux/equihash_avx1.o" )
+    set_target_properties ( xenoncat_avx1 PROPERTIES IMPORTED_LOCATION "${nheqminer_src_dir}/cpu_xenoncat/asm_linux/equihash_avx1.o" )
     add_library ( xenoncat_avx2 SHARED IMPORTED GLOBAL )
-    set_target_properties ( xenoncat_avx2 PROPERTIES IMPORTED_LOCATION "../nheqminer/cpu_xenoncat/asm_linux/equihash_avx2.o" )
+    set_target_properties ( xenoncat_avx2 PROPERTIES IMPORTED_LOCATION "${nheqminer_src_dir}/cpu_xenoncat/asm_linux/equihash_avx2.o" )
     target_link_libraries(${PROJECT_NAME} cpu_xenoncat xenoncat_avx1 xenoncat_avx2)
 endif()
 if (USE_CUDA_TROMP)
