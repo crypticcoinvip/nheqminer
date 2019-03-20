@@ -48,7 +48,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # Common
-include_directories(${crypticminer_SOURCE_DIR}/nheqminer)
+include_directories(${nheqminer_SOURCE_DIR}/nheqminer)
 
 # BOOST
 #find_package(Threads REQUIRED COMPONENTS)
