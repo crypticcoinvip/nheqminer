@@ -29,7 +29,7 @@ Work in progress.
 
 Working solvers CPU_TROMP, CPU_XENONCAT, CUDA_TROMP, CUDA_DJEZO
 
-## Linux (Ubuntu 14.04 / 16.04) Build CPU_XENONCAT:
+## Linux (Ubuntu 14.04 / 16.04) Build CPU_TROMP:
 
  - Open terminal and run the following commands:
    - `sudo apt-get install cmake build-essential libboost-all-dev`
@@ -52,8 +52,8 @@ Working solvers CPU_TROMP, CPU_XENONCAT, CUDA_TROMP, CUDA_DJEZO
    - `sudo apt-get install cuda-toolkit-8-0`
    - `sudo apt-get install cmake build-essential libboost-all-dev`
    - `git clone https://github.com/crypticcoinvip/nheqminer.git`
-   - `cd nheqminer && cmake . && make -j $(nproc)`
-   - or specify your compute version for example 50 like so `cd nheqminer/ && cmake COMPUTE=50 . && make`
+   - `cd nheqminer && cmake -DUSE_CPU_TROMP=OFF -DUSE_CUDA_TROMP=ON . && make -j $(nproc)`
+   - or specify your compute version for example 50 like so `cd nheqminer/ && cmake COMPUTE=50 -DUSE_CPU_TROMP=OFF -DUSE_CUDA_TROMP=ON . && make`
 
    
 
@@ -84,13 +84,17 @@ Example to run benchmark on your CPU:
 
         nheqminer -b
         
-Example to mine on your CPU with your own CrypticCoin address and worker1 on CrypticPool server, using 6 threads:
+Example to mine on your CPU with your own CrypticCoin address and worker1 on CrypticPool server, using 4 threads:
 
-        nheqminer -l crypticpool.com:44444 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker1 -t 6
+        nheqminer -l crypticpool.com:44444 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker1 -t 4
 
-Example to mine on your GPU with your own CrypticCoin address and worker1 on CrypticPool server, using 6 threads:
+Example to mine on your GPU with your own CrypticCoin address and worker2 on CrypticPool server, using 6 threads (CUDA_TROMP):
 
-        nheqminer -l crypticpool.com:55555 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker2 -cv 1 -cd 0 -ct 2
+        nheqminer -l crypticpool.com:55555 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker2 -cv 1 -cd 0 -ct 6
+
+Example to mine on your GPU with your own CrypticCoin address and worker3 on CrypticPool server, using 8 threads (CUDA_DJEZO):
+
+        nheqminer -l crypticpool.com:55555 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker3 -cv 0 -cd 0 -ct 8
 
 <i>Note: if you have a 4-core CPU with hyper threading enabled (total 8 threads) it is best to run with only 6 threads (experimental benchmarks shows that best results are achieved with 75% threads utilized)</i>
 
