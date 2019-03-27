@@ -303,211 +303,198 @@ struct packer_cantor
 template <u32 RB, u32 SM, typename PACKER>
 __global__ void digit_first(equi<RB, SM>* eq, u32 nonce)
 {
-	const u32 block = blockIdx.x * blockDim.x + threadIdx.x;
-	__shared__ u64 hash_h[8];
-	u32* hash_h32 = (u32*)hash_h;
+    const u32 block = blockIdx.x * blockDim.x + threadIdx.x;
+    __shared__ u64 hash_h[8];
+    u32* hash_h32 = (u32*)hash_h;
+    if (threadIdx.x < 16)
+        hash_h32[threadIdx.x] = __ldca(&eq->blake_h32[threadIdx.x]);
+    __syncthreads();
+    u64 m = (u64) block;
+    union
+    {
+        u64 v[16];
+        u32 v32[32];
+        uint4 v128[8];
+    };
 
-	if (threadIdx.x < 16)
-		hash_h32[threadIdx.x] = __ldca(&eq->blake_h32[threadIdx.x]);
+    // @cryp: here's what actually happens below.
+    // digit_first was provided was not full header hash, we're doing updage_hash({the blake2b buffer before the call}, {equi tree leaf index})
+    // considering that {the blake2b buffer before the call} is always a part of nonce buffer, it's always 0 in every bit.
+    // so we just hardcode these zero data during blake2b mixing, so we do less memory accesses and don't compute complex buffer indexes
+    // if block header has changed, and you need to figure out new positions/offsets, then just add prints into blake2b.cu and launch cuda_tromp solver.
 
-	__syncthreads();
+    v[0] = hash_h[0];
+    v[1] = hash_h[1];
+    v[2] = hash_h[2];
+    v[3] = hash_h[3];
+    v[4] = hash_h[4];
+    v[5] = hash_h[5];
+    v[6] = hash_h[6];
+    v[7] = hash_h[7];
+    v[8] = blake_iv[0];
+    v[9] = blake_iv[1];
+    v[10] = blake_iv[2];
+    v[11] = blake_iv[3];
+    v[12] = blake_iv[4] ^ (128 + 16 + sizeof(block)); // @cryp: depends on the header structure
+    v[13] = blake_iv[5];
+    v[14] = blake_iv[6] ^ 0xffffffffffffffff;
+    v[15] = blake_iv[7];
+    // @cryp: depends on the header structure
+    // mix 1
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], m, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 2
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, m);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 3
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, m);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 4
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], m, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 5
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], m, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 6
+    G2(v[0], v[4], v[8], v[12], m, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 7
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, m);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 8
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], m, 0);
+    // mix 9
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, m);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 10
+    G2(v[0], v[4], v[8], v[12], 0, m);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 11
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], m, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, 0);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    // mix 12
+    G2(v[0], v[4], v[8], v[12], 0, 0);
+    G2(v[1], v[5], v[9], v[13], 0, 0);
+    G2(v[2], v[6], v[10], v[14], 0, 0);
+    G2(v[3], v[7], v[11], v[15], 0, 0);
+    G2(v[0], v[5], v[10], v[15], 0, 0);
+    G2(v[1], v[6], v[11], v[12], 0, m);
+    G2(v[2], v[7], v[8], v[13], 0, 0);
+    G2(v[3], v[4], v[9], v[14], 0, 0);
+    v[0] ^= hash_h[0] ^ v[8];
+    v[1] ^= hash_h[1] ^ v[9];
+    v[2] ^= hash_h[2] ^ v[10];
+    v[3] ^= hash_h[3] ^ v[11];
+    v[4] ^= hash_h[4] ^ v[12];
+    v[5] ^= hash_h[5] ^ v[13];
+    //v[6] ^= hash_h[6] ^ v[14];
+    //v[7] ^= hash_h[7] ^ v[15];
+    v32[12] ^= hash_h32[12] ^ v32[28]; // @cryp: depends on the header structure
 
-	u64 m = (u64)block << 32 | (u64)nonce;
-
-	union
-	{
-		u64 v[16];
-		u32 v32[32];
-		uint4 v128[8];
-	};
-
-	v[0] = hash_h[0];
-	v[1] = hash_h[1];
-	v[2] = hash_h[2];
-	v[3] = hash_h[3];
-	v[4] = hash_h[4];
-	v[5] = hash_h[5];
-	v[6] = hash_h[6];
-	v[7] = hash_h[7];
-	v[8] = blake_iv[0];
-	v[9] = blake_iv[1];
-	v[10] = blake_iv[2];
-	v[11] = blake_iv[3];
-	v[12] = blake_iv[4] ^ (128 + 16);
-	v[13] = blake_iv[5];
-	v[14] = blake_iv[6] ^ 0xffffffffffffffff;
-	v[15] = blake_iv[7];
-
-	// mix 1
-	G2(v[0], v[4], v[8], v[12], 0, m);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 2
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], m, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 3
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, m);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 4
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, m);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 5
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, m);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 6
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], m, 0);
-
-	// mix 7
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], m, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 8
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, m);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 9
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], m, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 10
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], m, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 11
-	G2(v[0], v[4], v[8], v[12], 0, m);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], 0, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	// mix 12
-	G2(v[0], v[4], v[8], v[12], 0, 0);
-	G2(v[1], v[5], v[9], v[13], 0, 0);
-	G2(v[2], v[6], v[10], v[14], 0, 0);
-	G2(v[3], v[7], v[11], v[15], 0, 0);
-	G2(v[0], v[5], v[10], v[15], m, 0);
-	G2(v[1], v[6], v[11], v[12], 0, 0);
-	G2(v[2], v[7], v[8], v[13], 0, 0);
-	G2(v[3], v[4], v[9], v[14], 0, 0);
-
-	v[0] ^= hash_h[0] ^ v[8];
-	v[1] ^= hash_h[1] ^ v[9];
-	v[2] ^= hash_h[2] ^ v[10];
-	v[3] ^= hash_h[3] ^ v[11];
-	v[4] ^= hash_h[4] ^ v[12];
-	v[5] ^= hash_h[5] ^ v[13];
-	v32[12] ^= hash_h32[12] ^ v32[28];
-
-	u32 bexor = __byte_perm(v32[0], 0, 0x4012); // first 20 bits
-	u32 bucketid;
-	asm("bfe.u32 %0, %1, 12, 12;" : "=r"(bucketid) : "r"(bexor));
-	u32 slotp = atomicAdd(&eq->edata.nslots0[bucketid], 1);
-	if (slotp < RB8_NSLOTS)
-	{
-		slot* s = &eq->round0trees[bucketid][slotp];
-
-		uint4 tt;
-		tt.x = __byte_perm(v32[0], v32[1], 0x1234);
-		tt.y = __byte_perm(v32[1], v32[2], 0x1234);
-		tt.z = __byte_perm(v32[2], v32[3], 0x1234);
-		tt.w = __byte_perm(v32[3], v32[4], 0x1234);
-		*(uint4*)(&s->hash[0]) = tt;
-
-		tt.x = __byte_perm(v32[4], v32[5], 0x1234);
-		tt.y = __byte_perm(v32[5], v32[6], 0x1234);
-		tt.z = 0;
-		tt.w = block << 1;
-		*(uint4*)(&s->hash[4]) = tt;
-	}
-
-	bexor = __byte_perm(v32[6], 0, 0x0123);
-	asm("bfe.u32 %0, %1, 12, 12;" : "=r"(bucketid) : "r"(bexor));
-	slotp = atomicAdd(&eq->edata.nslots0[bucketid], 1);
-	if (slotp < RB8_NSLOTS)
-	{
-		slot* s = &eq->round0trees[bucketid][slotp];
-
-		uint4 tt;
-		tt.x = __byte_perm(v32[6], v32[7], 0x2345);
-		tt.y = __byte_perm(v32[7], v32[8], 0x2345);
-		tt.z = __byte_perm(v32[8], v32[9], 0x2345);
-		tt.w = __byte_perm(v32[9], v32[10], 0x2345);
-		*(uint4*)(&s->hash[0]) = tt;
-
-		tt.x = __byte_perm(v32[10], v32[11], 0x2345);
-		tt.y = __byte_perm(v32[11], v32[12], 0x2345);
-		tt.z = 0;
-		tt.w = (block << 1) + 1;
-		*(uint4*)(&s->hash[4]) = tt;
-	}
+    u32 bexor = __byte_perm(v32[0], 0, 0x4012); // first 20 bits
+    u32 bucketid;
+    asm("bfe.u32 %0, %1, 12, 12;" : "=r"(bucketid) : "r"(bexor));
+    u32 slotp = atomicAdd(&eq->edata.nslots0[bucketid], 1);
+    if (slotp < RB8_NSLOTS)
+    {
+        slot* s = &eq->round0trees[bucketid][slotp];
+        uint4 tt;
+        tt.x = __byte_perm(v32[0], v32[1], 0x1234);
+        tt.y = __byte_perm(v32[1], v32[2], 0x1234);
+        tt.z = __byte_perm(v32[2], v32[3], 0x1234);
+        tt.w = __byte_perm(v32[3], v32[4], 0x1234);
+        *(uint4*)(&s->hash[0]) = tt;
+        tt.x = __byte_perm(v32[4], v32[5], 0x1234);
+        tt.y = __byte_perm(v32[5], v32[6], 0x1234);
+        tt.z = 0;
+        tt.w = block << 1;
+        *(uint4*)(&s->hash[4]) = tt;
+    }
+    bexor = __byte_perm(v32[6], 0, 0x0123);
+    asm("bfe.u32 %0, %1, 12, 12;" : "=r"(bucketid) : "r"(bexor));
+    slotp = atomicAdd(&eq->edata.nslots0[bucketid], 1);
+    if (slotp < RB8_NSLOTS)
+    {
+        slot* s = &eq->round0trees[bucketid][slotp];
+        uint4 tt;
+        tt.x = __byte_perm(v32[6], v32[7], 0x2345);
+        tt.y = __byte_perm(v32[7], v32[8], 0x2345);
+        tt.z = __byte_perm(v32[8], v32[9], 0x2345);
+        tt.w = __byte_perm(v32[9], v32[10], 0x2345);
+        *(uint4*)(&s->hash[0]) = tt;
+        tt.x = __byte_perm(v32[10], v32[11], 0x2345);
+        tt.y = __byte_perm(v32[11], v32[12], 0x2345);
+        tt.z = 0;
+        tt.w = (block << 1) + 1;
+        *(uint4*)(&s->hash[4]) = tt;
+    }
 }
 
 /*
@@ -1965,7 +1952,7 @@ __host__ void setheader(blake2b_state *ctx, const char *header, const u32 header
 	memcpy(P->personal, (const uint8_t *)personal, 16);
 	blake2b_init_param(ctx, P);
 	blake2b_update(ctx, (const uchar *)header, headerLen);
-	blake2b_update(ctx, (const uchar *)nce, nonceLen);
+	blake2b_update(ctx, (const uchar *)nce, nonceLen); // @cryp: hash isn't full here, so don't be fooled. GPU kernel still depends on the header/nonce structure.
 }
 
 
