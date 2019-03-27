@@ -15,17 +15,16 @@ Download and install:
 
 Open **nheqminer.sln** under **nheqminer/nheqminer.sln** and build. You will have to build Release cpu_xenoncat project first, then Release cuda_djezo project, then select Release and build nheqminer.
 
-### Enabled solvers: 
-  - USE_CPU_XENONCAT
+### Enabled solvers:
   - USE_CUDA_DJEZO
 
-If you don't wan't to build with all solvlers you can go to **nheqminer Properties > C/C++ > Preprocessor > Preprocessor Definitions** and remove the solver you don't need.
+If you don't wan't to build with all solvers you can go to **nheqminer Properties > C/C++ > Preprocessor > Preprocessor Definitions** and remove the solver you don't need.
 
 ## Linux
 
 Work in progress.
 
-Working solvers: CPU_TROMP, CUDA_DJEZO
+Working solvers: CPU_TROMP, CUDA_TROMP, CUDA_DJEZO
 
 ## Linux (Ubuntu 14.04 / 16.04) Build CPU_TROMP:
 
@@ -33,7 +32,7 @@ Working solvers: CPU_TROMP, CUDA_DJEZO
    - `sudo apt-get install cmake build-essential libboost-all-dev`
    - `git clone https://github.com/crypticcoinvip/nheqminer.git`
    - `cd nheqminer`
-   - `cmake .`
+   - `cmake -DUSE_CPU_XENONCAT=OFF -DUSE_CUDA_TROMP=OFF -DUSE_CPU_TROMP=ON -DUSE_CUDA_DJEZO=OFF .`
    - `make -j $(nproc)`
 
 ## Linux (Ubuntu 14.04 / 16.04) Build CUDA_DJEZO:
@@ -51,7 +50,7 @@ Working solvers: CPU_TROMP, CUDA_DJEZO
    - `sudo apt-get install cmake build-essential libboost-all-dev`
    - `git clone https://github.com/crypticcoinvip/nheqminer.git`
    - `cd nheqminer && CUDA_CUDART_LIBRARY="/usr/local/cuda/lib64/libcudart.so" && cmake -DUSE_CPU_XENONCAT=OFF  -DUSE_CUDA_TROMP=OFF -DUSE_CPU_TROMP=ON -DUSE_CUDA_DJEZO=ON -DCMAKE_BUILD_TYPE=Release -DCUDA_CUDART_LIBRARY=CUDA_CUDART_LIBRARY . && make -j $(nproc)`
-   - If your GPU compute capability isn't supported by default, specify it explicitly (for example 50) like so `cd nheqminer && CUDA_CUDART_LIBRARY="/usr/local/cuda/lib64/libcudart.so" && cmake COMPUTE=50 -DUSE_CPU_XENONCAT=OFF  -DUSE_CUDA_TROMP=OFF -DUSE_CPU_TROMP=ON -DUSE_CUDA_DJEZO=ON -DCMAKE_BUILD_TYPE=Release -DCUDA_CUDART_LIBRARY=CUDA_CUDART_LIBRARY . && make -j $(nproc)`
+   - If your GPU compute capability isn't supported by default, specify it explicitly (for example 80) like so `cd nheqminer && CUDA_CUDART_LIBRARY="/usr/local/cuda/lib64/libcudart.so" && cmake COMPUTE=80 -DUSE_CPU_XENONCAT=OFF  -DUSE_CUDA_TROMP=OFF -DUSE_CPU_TROMP=ON -DUSE_CUDA_DJEZO=ON -DCMAKE_BUILD_TYPE=Release -DCUDA_CUDART_LIBRARY=CUDA_CUDART_LIBRARY . && make -j $(nproc)`
 
    
 # Run instructions:
@@ -70,7 +69,7 @@ CPU settings
 
 NVIDIA CUDA settings
 	-ci	CUDA info\
-  -cv Solver to use (0 = GPU-djezo)
+  -cv Solver to use (0 = GPU-djezo, 1 = GPU-tromp)
 	-cd [devices]	Enable CUDA mining on spec. devices
 	-cb [blocks]	Number of blocks
 	-ct [tpb]	Number of threads per block
@@ -85,10 +84,6 @@ Example to run benchmark on your CPU:
 Example to mine on your CPU AVX1 with your own CrypticCoin address and worker1 on CrypticPool server, using 4 threads (make sure your executable contains CPU-tromp solver):
 
         nheqminer -l crypticpool.com:44444 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker1 -e 1 -t 4
-        
-Example to mine on your CPU AVX2 with your own CrypticCoin address and worker1 on CrypticPool server, using 4 threads (make sure your executable contains CPU-xenoncat solver):
-
-        nheqminer -l crypticpool.com:44444 -u YOUR_CRYPTICCOIN_ADDRESS_HERE.worker1 -e 2 -t 4
 
 Example to mine on your GPU with your own CrypticCoin address and worker3 on CrypticPool server, using 8 threads (make sure your executable contains GPU-djezo solver):
 
