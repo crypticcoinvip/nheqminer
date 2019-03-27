@@ -24,7 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="equi_miner.cu">
-      <CodeGeneration>compute_52,sm_52;compute_50,sm_50</CodeGeneration>
+      <CodeGeneration>compute_75,sm_75;compute_70,sm_70;compute_61,sm_61;compute_60,sm_60;compute_52,sm_52;compute_50,sm_50</CodeGeneration>
     </CudaCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
