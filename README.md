@@ -13,7 +13,7 @@ Download and install:
 - boost 1.62: https://boost.teeks99.com/bin/1.62.0/
 - 64 bit version only
 
-Open **nheqminer.sln** under **nheqminer/nheqminer.sln** and build. You will have to build Release cpu_xenoncat project first, then Release cuda_djezo project, then select Release and build nheqminer.
+Open **nheqminer.sln** under **nheqminer/nheqminer.sln** and build. You will have to build Release cuda_djezo project, then select Release and build nheqminer.
 
 ### Enabled solvers:
   - USE_CUDA_DJEZO
